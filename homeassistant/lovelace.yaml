@@ -1,12 +1,52 @@
 resources:
   - type: js
-    url: /local/vertical-stack-in-card.js?v=0.1.2
-  - type: module
+    url: /local/vertical-stack-in-card.js?v=0.4.4
+  - type: js
     url: /local/circle-sensor-card.js?v=0
+background: var(--background-image)
 title: Solar Dashboard
-
 views:
-  - badges: []
+  - theme: ios-dark-mode-blue-red-alternative
+    title: Home
+    path: home
+    icon: mdi:home
+    badges: []
+    cards:
+      - type: entity
+        entity: sensor.huawei_igd_external_ip
+      - type: light
+        entity: light.tz3210_r5afgmkl_ts0505b_light
+        name: Bed Room Bulb
+        hold_action:
+          action: more-info
+      - type: entities
+        entities:
+          - sensor.huawei_igd_kib_s_received
+          - sensor.huawei_igd_kib_s_sent
+          - sensor.hp_deskjet_5820_series
+      - type: media-control
+        entity: media_player.lg_webos_tv_up7750pvb
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.tz3000_typdpbpg_ts011f_switch
+        show_state: true
+        name: Bed Room Switch
+      - type: entities
+        entities:
+          - entity: select.tz3000_typdpbpg_ts011f_power_on_state
+          - entity: sensor.tz3000_typdpbpg_ts011f_active_power
+          - entity: sensor.tz3000_typdpbpg_ts011f_power_factor
+          - entity: sensor.tz3000_typdpbpg_ts011f_rms_current
+          - entity: sensor.tz3000_typdpbpg_ts011f_rms_voltage
+          - entity: sensor.tz3000_typdpbpg_ts011f_summation_delivered
+        show_header_toggle: false
+  - theme: ios-dark-mode-orange-alternative
+    icon: mdi:grid
+    title: Solar Configuration
+    badges: []
     cards:
       - cards:
           - type: conditional
@@ -56,47 +96,42 @@ views:
             type: markdown
           - type: entities
             entities:
-              - entity: input_select.solar_output_source_priority
-                icon: 'mdi:battery'
               - entity: input_select.solar_charger_priority
-                icon: 'mdi:format-list-numbered'
-              - entity: automation.auto_switch_to_solar_only_charging_at_sunrise
-              - entity: automation.switch_to_battery_preferred_output_late_evenings
+                icon: mdi:format-list-numbered
+                styles:
+                  width: 100px
+                  height: 100px
+              - entity: input_select.solar_output_source_priority
+                icon: mdi:battery
+                styles:
+                  width: 100px
+                  height: 100px
+          - content: |
+
+              ---
+            type: markdown
+            styles:
+              width: 100px
+              height: 100px
+          - content: |
+              ---
+            type: markdown
+          - type: history-graph
+            hours_to_show: 24
+            entities:
+              - entity: sensor.voltronic
+                styles:
+                  width: 100
+                  height: 100
+          - content: |
+              ---
+            type: markdown
         show_header_toggle: false
         title: null
-        type: 'custom:vertical-stack-in-card'
-      - cards:
-          - entities:
-              - entity: sensor.voltronic_pv_in_voltage
-                name: PV Voltage (V)
-                icon: 'mdi:grid'
-                type: sensor
-              - entity: sensor.voltronic_pv_in_watts
-                name: PV Watts (W)
-                icon: 'mdi:battery-charging-70'
-                type: sensor
-            type: glance
-          - entities:
-              - entity: sensor.voltronic_load_watt
-                name: Inverter Output Load
-            type: history-graph
-          - entities:
-              - entity: sensor.voltronic_ac_grid_frequency
-                icon: 'mdi:current-ac'
-                name: Grid Frequency
-              - entity: sensor.voltronic_ac_grid_voltage
-                icon: 'mdi:power-plug'
-                name: Grid Voltage
-              - entity: sensor.voltronic_ac_out_frequency
-                icon: 'mdi:current-ac'
-                name: Output Freq
-              - entity: sensor.voltronic_ac_out_voltage
-                icon: 'mdi:power-plug'
-                name: Output Voltage
-            type: glance
-        show_header_toggle: false
-        title: System Overview
-        type: 'custom:vertical-stack-in-card'
+        theme: ios-dark-mode-dark-green
+        type: custom:vertical-stack-in-card
+        view_layout:
+          position: sidebar
       - cards:
           - cards:
               - color_stops:
@@ -104,23 +139,35 @@ views:
                   '60': '#ff0000'
                   '80': '#ffe400'
                 entity: sensor.voltronic_load_pct
+                style:
+                  width: 100%
+                  height: 100%
+                  left: 0
+                  top: 0
                 font_style:
                   font-size: 1.5em
+                  color: blue
                 gradient: true
                 name: System Load (%)
                 stroke_width: 10
-                type: 'custom:circle-sensor-card'
+                type: custom:circle-sensor-card
               - color_stops:
                   '50': '#ff0000'
                   '75': '#ffe400'
                   '100': '#00dc10'
                 entity: sensor.voltronic_battery_capacity
+                style:
+                  width: 100%
+                  height: 100%
+                  left: 0
+                  top: 0
                 font_style:
                   font-size: 1.5em
+                  color: blue
                 gradient: true
                 name: Battery Capacity
                 stroke_width: 10
-                type: 'custom:circle-sensor-card'
+                type: custom:circle-sensor-card
             type: horizontal-stack
           - entities:
               - entity: sensor.voltronic_battery_charge_current
@@ -130,16 +177,16 @@ views:
             type: history-graph
           - entities:
               - entity: sensor.voltronic_battery_float_voltage
-                icon: 'mdi:battery-charging'
+                icon: mdi:battery-charging
                 name: Float Point
               - entity: sensor.voltronic_battery_recharge_voltage
-                icon: 'mdi:battery-negative'
+                icon: mdi:battery-negative
                 name: Recharge Lvl
               - entity: sensor.voltronic_battery_redischarge_voltage
-                icon: 'mdi:battery-plus'
+                icon: mdi:battery-plus
                 name: Discharge Lvl
               - entity: sensor.voltronic_battery_under_voltage
-                icon: 'mdi:battery-charging-wireless-outline'
+                icon: mdi:battery-charging-wireless-outline
                 name: Critical Cutoff
             type: glance
           - entity: sensor.voltronic_battery_voltage
@@ -147,6 +194,123 @@ views:
             type: sensor
         show_header_toggle: false
         title: null
-        type: 'custom:vertical-stack-in-card'
-    icon: 'mdi:grid'
-    title: Solar Configuration
+        type: custom:vertical-stack-in-card
+        view_layout:
+          position: sidebar
+      - cards:
+          - entities:
+              - entity: sensor.voltronic_pv_in_voltage
+                name: PV Voltage (V)
+                icon: mdi:grid
+                type: sensor
+              - entity: sensor.voltronic_pv_in_watts
+                name: PV Watts (W)
+                icon: mdi:battery-charging-70
+                type: sensor
+            type: glance
+          - entities:
+              - entity: sensor.voltronic_load_watt
+                name: Inverter Output Load
+            type: history-graph
+          - entities:
+              - entity: sensor.voltronic_ac_grid_frequency
+                icon: mdi:current-ac
+                name: Grid Frequency
+              - entity: sensor.voltronic_ac_grid_voltage
+                icon: mdi:power-plug
+                name: Grid Voltage
+              - entity: sensor.voltronic_ac_out_frequency
+                icon: mdi:current-ac
+                name: Output Freq
+              - entity: sensor.voltronic_ac_out_voltage
+                icon: mdi:power-plug
+                name: Output Voltage
+            type: glance
+        show_header_toggle: false
+        title: System Overview
+        type: custom:vertical-stack-in-card
+        view_layout:
+          position: sidebar
+      - type: entities
+        entities:
+          - automation.auto_switch_to_solar_only_charging_at_sunrise
+          - automation.switch_to_battery_preferred_output_late_evenings
+        state_color: true
+        view_layout:
+          position: sidebar
+      - show_current: true
+        show_forecast: true
+        type: weather-forecast
+        entity: weather.forecast_home_hourly
+        view_layout:
+          position: sidebar
+      - hours_to_show: 24
+        graph: line
+        type: sensor
+        entity: sensor.voltronic_pv_in_current
+        detail: 2
+        name: PV Current
+        unit: A
+        view_layout:
+          position: sidebar
+      - type: entities
+        entities:
+          - sensor.energy_current_hour
+        view_layout:
+          position: sidebar
+      - type: glance
+        entities:
+          - entity: weather.home
+            name: Weather
+          - entity: sensor.home_cloud_ceiling
+            name: Cloud Ceiling
+          - entity: sensor.home_thunderstorm_probability_day_0d
+            name: Thunderstorm Probability
+          - entity: sensor.home_precipitation
+            name: Precipitation
+        view_layout:
+          position: sidebar
+      - type: history-graph
+        entities:
+          - sun.sun
+        title: Sun
+        view_layout:
+          position: sidebar
+  - title: Grafana
+    path: grafana
+    icon: mdi:chart-areaspline-variant
+    type: panel
+    badges: []
+    cards:
+      - type: iframe
+        url: >-
+          http://192.168.1.236:8123/api/hassio_ingress/4Wi1e4ZbKD0fVZWqTGuV46Lmb2L0Jx_lJnlUHtjhw1k/d/E4qG89T4k/power-utilisation-and-solar-array?orgId=1&refresh=10s&kiosk
+        aspect_ratio: 100%
+  - icon: mdi:account
+    title: KVSH
+    path: kvsh
+    subview: false
+    type: sidebar
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.kvsh443
+            secondary_info: last-updated
+            name: Last FM
+        state_color: true
+        show_header_toggle: false
+        view_layout:
+          position: main
+      - type: media-control
+        entity: media_player.lg_smart_tv
+        theme: ios-light-mode-dark-blue-alternative
+        view_layout:
+          position: sidebar
+      - type: entities
+        entities:
+          - sensor.qbittorrent_down_speed
+          - sensor.qbittorrent_status
+          - sensor.qbittorrent_up_speed
+        view_layout:
+          position: sidebar
