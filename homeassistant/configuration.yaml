@@ -1,3 +1,29 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+logger:
+  default: info
+  
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24     #Cloudflare Argo 
+    - 192.168.1.240      # Add the IP address of the proxy server
+    - 100.116.161.51     # allow JellyFin
+    - 100.91.181.6
+    - 140.238.246.176    # Allow Oracle Linux KMS
+    - 172.30.32.0/23     # Subnet
+    - 100.0.0.0/8        # Subnet
+    - 192.168.1.0/24     # Subnet
+    
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Text to speech
+tts:
+  - platform: google_translate
 # You will need to merge with your own Home Assistant configuration.yml file...
 
 input_select:
@@ -5,8 +31,8 @@ input_select:
     name: Solar Output Source Priority
     options:
       - POP00 (Utility first)
-      - POP01 (Solar first)
-      - POP02 (SBU)
+      - POP01 (Solar Utility Battery)
+      - POP02 (Solar Battery Utility)
 
   solar_charger_priority:
     name: Solar Charger Priority Order
@@ -32,9 +58,9 @@ automation:
       payload: >
         {% if is_state("input_select.solar_output_source_priority", "POP00 (Utility first)") %}
           POP00
-        {% elif is_state("input_select.solar_output_source_priority", "POP01 (Solar first)") %}
+        {% elif is_state("input_select.solar_output_source_priority", "POP01 (Solar Utility Battery)") %}
           POP01
-        {% elif is_state("input_select.solar_output_source_priority", "POP02 (SBU)") %}
+        {% elif is_state("input_select.solar_output_source_priority", "POP02 (Solar Battery Utility)") %}
           POP02
         {% endif %}
 
@@ -70,21 +96,36 @@ automation:
     - service: input_select.select_option
       data:
         entity_id: input_select.solar_charger_priority
-        option: "PCP01 (Solar first)"
+        option: "PCP03 (Solar Only)"
     - service: input_select.select_option
       data:
         entity_id: input_select.solar_output_source_priority
-        option: "POP01 (Solar first)"
+        option: "POP02 (Solar Battery Utility)"
 
 - id: 'switch_battery_late_evenings'
-  # Running on UPS mode seems to fuck up the 8 port tplink switch (it drops out from time to time) so it's best that we change mode after 2AM when less people are using Plex etc...
-  alias: Switch to battery preferred output late evenings
+  # Running Late Night Switch to Line.
+  alias: Switch to Utility preferred output late evenings
   trigger:
-    - at: '02:00'
+    - at: '22:00'
       platform: time
   condition: []
   action:
     - service: input_select.select_option
       data:
         entity_id: input_select.solar_output_source_priority
-        option: "POP02 (SBU)"
+        option: "POP01 (Solar Utility Battery)"
+
+sensor:
+  - platform: history_stats
+    name: "Inverter on Batery Mode"
+    entity_id: sensor.voltronic_inverter_mode
+    state: "4"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+        
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+
