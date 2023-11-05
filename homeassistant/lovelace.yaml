@@ -1,31 +1,250 @@
-resources:
-  - type: js
-    url: /local/vertical-stack-in-card.js?v=0.4.4
-  - type: js
-    url: /local/circle-sensor-card.js?v=0
 background: var(--background-image)
 title: Solar Dashboard
 views:
+  - theme: ios-dark-mode-orange-alternative
+    icon: mdi:grid
+    title: Solar Configuration
+    subview: false
+    badges: []
+    cards:
+      - cards:
+          - type: energy-distribution
+            link_dashboard: true
+          - content: |
+              ---
+            type: markdown
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '3'
+            card:
+              type: picture
+              image: /local/inverter-modes/3.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '4'
+            card:
+              type: picture
+              image: /local/inverter-modes/4.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '5'
+            card:
+              type: picture
+              image: /local/inverter-modes/5.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - content: |
+              ---
+            type: markdown
+          - type: entities
+            entities:
+              - entity: input_select.solar_charger_priority
+                icon: mdi:format-list-numbered
+              - entity: input_select.solar_output_source_priority
+                icon: mdi:home-lightning-bolt
+                card_mod:
+                  style: |
+                    :host {
+                      {% if is_state('switch.schedule_3b8ebe','on') %}
+                        color: var(--disabled-text-color);
+                        pointer-events: none;
+                      {% endif %}
+          - content: |
+              ---
+            type: markdown
+          - type: history-graph
+            entities:
+              - entity: sensor.voltronic
+          - content: |
+              ---
+            type: markdown
+          - type: custom:scheduler-card
+            title: Auto Scheduler
+            include:
+              - input_select
+              - input_select.solar_charger_priority
+              - input_select.solar_output_source_priority
+              - sensor.voltronic_inverter_mode
+            exclude: []
+        title: ''
+        type: vertical-stack
+        view_layout:
+          position: sidebar
+      - cards:
+          - cards:
+              - entity: sensor.voltronic_load_pct
+                name: System Load (%)
+                type: gauge
+                needle: true
+                min: 1
+                max: 30
+                segments:
+                  - from: 0
+                    color: '#00ffff'
+                  - from: 5
+                    color: '#70a000'
+                  - from: 10
+                    color: '#31a049'
+                  - from: 15
+                    color: '#ffa600'
+                  - from: 25
+                    color: '#db4437'
+              - entity: sensor.voltronic_battery_capacity
+                name: Battery Capacity
+                type: gauge
+                severity:
+                  red: 40
+                  yellow: 65
+                  green: 80
+            type: horizontal-stack
+          - entities:
+              - entity: sensor.voltronic_battery_charge_current
+                name: Battery Charge Current (A)
+                show_state: true
+                show_graph: true
+                color: aqua
+              - entity: sensor.voltronic_battery_discharge_current
+                name: Battery Discharge Current (A)
+                show_state: true
+                show_graph: true
+                color: purple
+            type: custom:mini-graph-card
+            points_per_hour: 6
+            hours_to_show: 3
+            show:
+              name: true
+              legend: true
+              icon: true
+              labels: true
+              points: true
+          - entities:
+              - entity: sensor.voltronic_battery_float_voltage
+                icon: mdi:battery-charging
+                name: Float Point
+              - entity: sensor.voltronic_battery_recharge_voltage
+                icon: mdi:battery-arrow-up
+                name: Recharge Lvl
+              - entity: sensor.voltronic_battery_redischarge_voltage
+                icon: mdi:battery-arrow-down-outline
+                name: Discharge Lvl
+              - entity: sensor.voltronic_battery_under_voltage
+                icon: mdi:battery-remove-outline
+                name: Critical Cutoff
+            type: glance
+          - entity: sensor.voltronic_battery_voltage
+            name: Battery Voltage (V)
+            type: sensor
+        title: ''
+        type: vertical-stack
+        view_layout:
+          position: sidebar
+      - cards:
+          - entities:
+              - entity: sensor.voltronic_pv_in_voltage
+                name: PV Voltage (V)
+                icon: mdi:grid
+                type: sensor
+              - entity: sensor.voltronic_pv_in_watts
+                name: PV Watts (W)
+                icon: mdi:battery-charging-70
+                type: sensor
+            type: glance
+          - entities:
+              - entity: sensor.voltronic_load_watt
+                name: Inverter Output Load
+                color: green
+            type: custom:mini-graph-card
+            points_per_hour: 6
+            hours_to_show: 3
+            show:
+              graph: line
+              labels: true
+              points: true
+          - entities:
+              - entity: sensor.voltronic_ac_grid_frequency
+                icon: mdi:current-ac
+                name: Grid Frequency
+              - entity: sensor.voltronic_ac_grid_voltage
+                icon: mdi:power-plug
+                name: Grid Voltage
+              - entity: sensor.voltronic_ac_out_frequency
+                icon: mdi:current-ac
+                name: Output Freq
+              - entity: sensor.voltronic_ac_out_voltage
+                icon: mdi:power-plug-outline
+                name: Output Voltage
+            type: glance
+        show_header_toggle: false
+        title: System Overview
+        type: custom:vertical-stack-in-card
+        view_layout:
+          position: sidebar
+      - hours_to_show: 24
+        graph: line
+        type: sensor
+        entity: sensor.voltronic_pv_in_current
+        detail: 2
+        name: PV Current
+        unit: A
+        view_layout:
+          position: sidebar
+      - type: entities
+        entities:
+          - entity: sensor.voltronic_pv_in_watthour
+            name: Solar PV in Wh
+          - entity: sensor.solar_charge_load_watts
+          - entity: sensor.solar_discharge_load_watts
+          - entity: sensor.voltronic_pv_in_kwh
+            name: Solar PV in KWh
+          - entity: sensor.solar_charge_load_kwh
+          - entity: sensor.solar_discharge_load_kwh
+          - entity: sensor.grid_load_kwh
+            icon: mdi:transmission-tower-export
+          - entity: sensor.energy_current_hour
+            icon: mdi:sun-compass
+      - type: glance
+        entities:
+          - entity: weather.home
+            name: Weather
+          - entity: sensor.home_cloud_ceiling
+            name: Cloud Ceiling
+          - entity: sensor.home_thunderstorm_probability_tonight
+            name: Thunderstorm Probability
+          - entity: sensor.home_precipitation
+            name: Precipitation
+        view_layout:
+          position: sidebar
+      - type: history-graph
+        entities:
+          - entity: sun.sun
+          - entity: sensor.moon_phase
+        title: Sun
+        view_layout:
+          position: sidebar
   - theme: ios-dark-mode-blue-red-alternative
     title: Home
     path: home
     icon: mdi:home
     badges: []
     cards:
-      - type: entity
-        entity: sensor.huawei_igd_external_ip
       - type: light
         entity: light.tz3210_r5afgmkl_ts0505b_light
         name: Bed Room Bulb
         hold_action:
           action: more-info
-      - type: entities
-        entities:
-          - sensor.huawei_igd_kib_s_received
-          - sensor.huawei_igd_kib_s_sent
-          - sensor.hp_deskjet_5820_series
-      - type: media-control
-        entity: media_player.lg_webos_tv_up7750pvb
       - show_name: true
         show_icon: true
         type: button
@@ -43,109 +262,87 @@ views:
           - entity: sensor.tz3000_typdpbpg_ts011f_rms_voltage
           - entity: sensor.tz3000_typdpbpg_ts011f_summation_delivered
         show_header_toggle: false
-  - theme: ios-dark-mode-orange-alternative
-    icon: mdi:grid
-    title: Solar Configuration
+  - icon: mdi:account
+    title: KVSH
+    path: kvsh
+    subview: false
+    type: sidebar
     badges: []
     cards:
-      - cards:
-          - type: conditional
-            conditions:
-              - entity: sensor.voltronic_inverter_mode
-                state: '1'
-            card:
-              type: picture
-              image: /local/inverter-modes/1.png
-          - type: conditional
-            conditions:
-              - entity: sensor.voltronic_inverter_mode
-                state: '2'
-            card:
-              type: picture
-              image: /local/inverter-modes/2.png
-          - type: conditional
-            conditions:
-              - entity: sensor.voltronic_inverter_mode
-                state: '3'
-            card:
-              type: picture
-              image: /local/inverter-modes/3.png
-          - type: conditional
-            conditions:
-              - entity: sensor.voltronic_inverter_mode
-                state: '4'
-            card:
-              type: picture
-              image: /local/inverter-modes/4.png
-          - type: conditional
-            conditions:
-              - entity: sensor.voltronic_inverter_mode
-                state: '5'
-            card:
-              type: picture
-              image: /local/inverter-modes/5.png
-          - type: conditional
-            conditions:
-              - entity: sensor.voltronic_inverter_mode
-                state: '6'
-            card:
-              type: picture
-              image: /local/inverter-modes/6.png
-          - content: |
-              ---
-            type: markdown
-          - type: entities
-            entities:
-              - entity: input_select.solar_charger_priority
-                icon: mdi:format-list-numbered
-                styles:
-                  width: 100px
-                  height: 100px
-              - entity: input_select.solar_output_source_priority
-                icon: mdi:battery
-                styles:
-                  width: 100px
-                  height: 100px
-          - content: |
-
-              ---
-            type: markdown
-            styles:
-              width: 100px
-              height: 100px
-          - content: |
-              ---
-            type: markdown
-          - type: history-graph
-            hours_to_show: 24
-            entities:
-              - entity: sensor.voltronic
-                styles:
-                  width: 100
-                  height: 100
-          - content: |
-              ---
-            type: markdown
+      - type: entities
+        entities:
+          - entity: sensor.lastfm_kvsh443
+            secondary_info: last-changed
+          - entity: binary_sensor.kvsh443
+            name: Xbox kvsh443
+            icon: ''
+            secondary_info: last-changed
+          - entity: sensor.steam_76561198277693555
+            name: Steam kvsh443
+            secondary_info: last-changed
+          - entity: binary_sensor.minecraft_server_status
+        state_color: true
         show_header_toggle: false
-        title: null
-        theme: ios-dark-mode-dark-green
-        type: custom:vertical-stack-in-card
+        view_layout:
+          position: main
+      - type: calendar
+        entities:
+          - calendar.kvsh443_gmail_com
+          - calendar.family
+          - calendar.holidays_in_sri_lanka
+        view_layout:
+          position: sidebar
+  - title: Grafana
+    path: grafana
+    icon: mdi:chart-areaspline-variant
+    type: panel
+    badges: []
+    cards:
+      - type: iframe
+        url: >-
+          https://has.kvsh.xyz/api/hassio_ingress/iXlcPYgKE5XipVE1EfAMHAfhKVI0ehCrVcYg6XFbDfY/d/E4qG89T4k/power-utilisation-and-solar-array?orgId=1&refresh=10s&kiosk
+        aspect_ratio: 100%
+  - visible: []
+    title: Entity Archive
+    icon: mdi:folder-zip
+    badges: []
+    cards:
+      - type: custom:scheduler-card
+        title: false
+        include:
+          - input_select
+          - input_select.solar_charger_priority
+          - input_select.solar_output_source_priority
+          - sensor.voltronic_inverter_mode
+        exclude: []
+      - type: entities
+        entities:
+          - automation.auto_switch_to_solar_only_charging_at_sunrise
+          - automation.switch_to_utility_preferred_output_late_evenings
+        state_color: true
+        view_layout:
+          position: sidebar
+      - type: entities
+        entities:
+          - sensor.energy_current_hour
         view_layout:
           position: sidebar
       - cards:
           - cards:
               - color_stops:
+                  '1': '#0000000'
+                  '3': '#ff55600'
+                  '7': '#ffff560'
+                  '20': '#ffff600'
                   '40': '#00dc10'
                   '60': '#ff0000'
                   '80': '#ffe400'
                 entity: sensor.voltronic_load_pct
                 style:
-                  width: 100%
-                  height: 100%
                   left: 0
                   top: 0
                 font_style:
-                  font-size: 1.5em
+                  font-size: 1.7em
                   color: blue
                 gradient: true
                 name: System Load (%)
@@ -157,13 +354,11 @@ views:
                   '100': '#00dc10'
                 entity: sensor.voltronic_battery_capacity
                 style:
-                  width: 100%
-                  height: 100%
                   left: 0
                   top: 0
                 font_style:
-                  font-size: 1.5em
-                  color: blue
+                  font-size: 1.7em
+                  color: purple
                 gradient: true
                 name: Battery Capacity
                 stroke_width: 10
@@ -180,13 +375,13 @@ views:
                 icon: mdi:battery-charging
                 name: Float Point
               - entity: sensor.voltronic_battery_recharge_voltage
-                icon: mdi:battery-negative
+                icon: mdi:battery-arrow-up
                 name: Recharge Lvl
               - entity: sensor.voltronic_battery_redischarge_voltage
-                icon: mdi:battery-plus
+                icon: mdi:battery-arrow-down-outline
                 name: Discharge Lvl
               - entity: sensor.voltronic_battery_under_voltage
-                icon: mdi:battery-charging-wireless-outline
+                icon: mdi:battery-remove-outline
                 name: Critical Cutoff
             type: glance
           - entity: sensor.voltronic_battery_voltage
@@ -211,6 +406,7 @@ views:
           - entities:
               - entity: sensor.voltronic_load_watt
                 name: Inverter Output Load
+                color: green
             type: history-graph
           - entities:
               - entity: sensor.voltronic_ac_grid_frequency
@@ -223,7 +419,7 @@ views:
                 icon: mdi:current-ac
                 name: Output Freq
               - entity: sensor.voltronic_ac_out_voltage
-                icon: mdi:power-plug
+                icon: mdi:power-plug-outline
                 name: Output Voltage
             type: glance
         show_header_toggle: false
@@ -231,86 +427,121 @@ views:
         type: custom:vertical-stack-in-card
         view_layout:
           position: sidebar
-      - type: entities
-        entities:
-          - automation.auto_switch_to_solar_only_charging_at_sunrise
-          - automation.switch_to_battery_preferred_output_late_evenings
-        state_color: true
-        view_layout:
-          position: sidebar
-      - show_current: true
-        show_forecast: true
-        type: weather-forecast
-        entity: weather.forecast_home_hourly
-        view_layout:
-          position: sidebar
-      - hours_to_show: 24
-        graph: line
-        type: sensor
-        entity: sensor.voltronic_pv_in_current
-        detail: 2
-        name: PV Current
-        unit: A
-        view_layout:
-          position: sidebar
-      - type: entities
-        entities:
-          - sensor.energy_current_hour
-        view_layout:
-          position: sidebar
-      - type: glance
-        entities:
-          - entity: weather.home
-            name: Weather
-          - entity: sensor.home_cloud_ceiling
-            name: Cloud Ceiling
-          - entity: sensor.home_thunderstorm_probability_day_0d
-            name: Thunderstorm Probability
-          - entity: sensor.home_precipitation
-            name: Precipitation
-        view_layout:
-          position: sidebar
-      - type: history-graph
-        entities:
-          - sun.sun
-        title: Sun
-        view_layout:
-          position: sidebar
-  - title: Grafana
-    path: grafana
-    icon: mdi:chart-areaspline-variant
-    type: panel
-    badges: []
-    cards:
-      - type: iframe
-        url: >-
-          http://192.168.1.236:8123/api/hassio_ingress/4Wi1e4ZbKD0fVZWqTGuV46Lmb2L0Jx_lJnlUHtjhw1k/d/E4qG89T4k/power-utilisation-and-solar-array?orgId=1&refresh=10s&kiosk
-        aspect_ratio: 100%
-  - icon: mdi:account
-    title: KVSH
-    path: kvsh
-    subview: false
-    type: sidebar
-    badges: []
-    cards:
-      - type: entities
-        entities:
-          - entity: sensor.kvsh443
-            secondary_info: last-updated
-            name: Last FM
-        state_color: true
-        show_header_toggle: false
-        view_layout:
-          position: main
-      - type: media-control
-        entity: media_player.lg_smart_tv
-        theme: ios-light-mode-dark-blue-alternative
-        view_layout:
-          position: sidebar
-      - type: entities
-        entities:
-          - sensor.qbittorrent_down_speed
-          - sensor.qbittorrent_status
-          - sensor.qbittorrent_up_speed
+      - cards:
+          - type: energy-distribution
+            link_dashboard: true
+          - content: |
+              ---
+            type: markdown
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '1'
+            card:
+              type: picture
+              image: /local/inverter-modes/1.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '2'
+            card:
+              type: picture
+              image: /local/inverter-modes/2.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '3'
+            card:
+              type: picture
+              image: /local/inverter-modes/3.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '4'
+            card:
+              type: picture
+              image: /local/inverter-modes/4.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '5'
+            card:
+              type: picture
+              image: /local/inverter-modes/5.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - type: conditional
+            conditions:
+              - entity: sensor.voltronic_inverter_mode
+                state: '6'
+            card:
+              type: picture
+              image: /local/inverter-modes/6.png
+              tap_action:
+                action: none
+              hold_action:
+                action: none
+          - content: |
+              ---
+            type: markdown
+          - type: entities
+            entities:
+              - entity: input_select.solar_charger_priority
+                icon: mdi:format-list-numbered
+                styles:
+                  width: 100px
+                  height: 100px
+              - entity: input_select.solar_output_source_priority
+                icon: mdi:home-lightning-bolt
+                card_mod:
+                  style: |
+                    :host {
+                      {% if is_state('switch.schedule_3b8ebe','on') %}
+                        color: var(--disabled-text-color);
+                        pointer-events: none;
+                      {% endif %}
+                styles:
+                  width: 100px
+                  height: 100px
+          - content: |
+              ---
+            type: markdown
+          - type: history-graph
+            entities:
+              - entity: sensor.voltronic
+                styles:
+                  width: 100px
+                  height: 100px
+          - content: |
+              ---
+            type: markdown
+          - type: custom:scheduler-card
+            title: Auto Scheduler
+            include:
+              - input_select
+              - input_select.solar_charger_priority
+              - input_select.solar_output_source_priority
+              - sensor.voltronic_inverter_mode
+            exclude: []
+        title: ''
+        type: vertical-stack
         view_layout:
           position: sidebar
